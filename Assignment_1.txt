@@ -80,3 +80,10 @@ The HTML document can contain object which is fetched elsewhere, when the reques
 
 -- TASK E --
 
+18) What is the server’s response (status code and phrase) in response to the initial HTTP GET message from your browser?
+	401 Authorization Required
+19) When your browser sends the HTTP GET message for the second time, what new field is included in the HTTP GET message?
+	The field Authorization is added.
+20) What does the "Connection: close" and "Connection: keep-alive" header field imply in HTTP protocol? When should one be used over the other?
+	Connection: keep-alive/close can be both specified by the server or client whether or not the connection should still 	      remain open for requests, the reason to keep the connection open is to avoid unnecessary handshakes again to establish 	     the connection again.
+	
