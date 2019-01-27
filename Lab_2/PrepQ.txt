@@ -1,0 +1,7 @@
+How will you transfer text data over a socket? How will you transfer binary data like image files over socket? You can assume the context of language that you plan to use for performing the assignment (i.e., c, c++, or java).
+
+What does the "Connection: close" and "Connection: Keep-alive" header field imply in HTTP protocol. When should one be used over the other? [See question 20 in assignment 1.] For this question you may also want to go back to the traces used in assignment 1 and see if you can find either (or both) of these types of connections.
+
+Consider the use of a proxy server, through which the client sends its request. Briefly explain (using a block diagram) the HTTP request-response interaction between a client, proxy, and server. Pay careful attention to the TCP port numbers as you will use a similar setup in this assignment. [See optional question 20 in assignment 21.]
+
+Please outline a high-level algorithm that describes how you plan to implement your version of NetNinny.
