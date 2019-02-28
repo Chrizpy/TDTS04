@@ -40,9 +40,3 @@ To run this program, you need to specify which port you want to run the proxy on
 
 
 python3 ninny.py 8080
-
-
-You can also make use of a debugging feature by adding an extra integer after the port number between 6-10 to set the debugging level. Which can look like this:
-
-
-python3 ninny.py 8080 6
