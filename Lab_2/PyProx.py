@@ -3,13 +3,13 @@ import sys
 import _thread
 
 HOST = ""
-BUFFER = 4096
+BUFFER = 1024
 
 
 bad_url  =  b'HTTP/1.1 301 Moved Permanently\r\nDate: Fri, 15 Feb 2019 05:58:12 GMT\r\nServer: Varnish\r\nLocation: https://www.ida.liu.se/~TDTS04/labs/2011/ass2/error1.html\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n'
 bad_cont =  b'HTTP/1.1 301 Moved Permanently\r\nDate: Fri, 15 Feb 2019 05:58:12 GMT\r\nServer: Varnish\r\nLocation: https://www.ida.liu.se/~TDTS04/labs/2011/ass2/error2.html\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n'
 
-baddies = ["spongebob", "britney spears", "paris hilton", "norrkoping", "examples"] 
+baddies = ["spongebob", "britney spears", "paris hilton", "norrkoping", "examples", "choose"] 
 
 class PyProx:
 
@@ -52,10 +52,12 @@ class PyProx:
 
     def client_connection(self, conn, cli_addr):
 
+        # Get the request from client, which site client wants to browse
         data_req = conn.recv(BUFFER)
         req_url  = data_req.decode().split(" ")[1]
         req_url  = req_url.split("/")[2] 
         first    = data_req.decode().split("\n")[0]
+        save     = b""
         
 
         if "www." in req_url:
@@ -68,54 +70,55 @@ class PyProx:
                 conn.send(bad_url)
                 _thread.exit()
 
+            try:
 
-        try:
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client_socket.connect((req_url, 80))
+                client_socket.send(data_req)
 
-            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client_socket.connect((req_url, 80))
-            client_socket.send(data_req)
+                dis_a_baddie = False
+                check        = False
 
-            dis_a_baddie = False
+                garbage = client_socket.recv(BUFFER)
+                header  = garbage.split(b'\r\n\r\n')[0]
+                
+                decoded_h = header.decode("utf-8")
 
-            while 1:
+                while 1:
 
-                    garbage = client_socket.recv(BUFFER)
-                    # If receive
+                    save    += garbage
+
+                    if "text/html" in decoded_h:
+                        check = True
 
                     if len(garbage) > 0:
-
-                        header_info = garbage.split(b'\r\n\r\n')[0].decode("utf-8")
                         
-                        if "text/html" in header_info:
-                           
-                            for line in garbage.split(b"\n"):
-                                if b"gzip" in line:
-                                    continue
-                                else:
-                                    print(line.decode())
-                                #dis_a_baddie = self.bad_word(line.decode())
-                                if dis_a_baddie:
-                                   break
-
-                   
-                        if dis_a_baddie:
-                            conn.send(bad_cont)
-                            _thread.exit()
-            
-                        conn.send(garbage)
+                        if check:
+                            print(garbage.split(b'\n')[0])
+    
+                            check = False
                         
                     else:
-                        break
+                        break      
 
-            client_socket.close()
+                    garbage = client_socket.recv(BUFFER)    
+                        
+                if dis_a_baddie:
+                    conn.send(bad_cont)
+                    conn.close()
+                    _thread.exit()
+                
 
-        except Exception as e:
-            print("Something went wrong. ", e)
+                conn.send(save)
+                client_socket.close()
 
-        finally:
-            conn.close()
-            print("Connection closed, thread exitted.")
-            _thread.exit()
+            except Exception as e:
+                print("Something went wrong. ", e)
+
+            finally:
+                conn.close()
+                print("Connection closed, thread exitted.")
+                _thread.exit()
 
         
 
