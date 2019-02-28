@@ -10,7 +10,7 @@ BUFFER = 1024
 bad_url  =  b'HTTP/1.1 301 Moved Permanently\r\nDate: Fri, 15 Feb 2019 05:58:12 GMT\r\nServer: Varnish\r\nLocation: https://www.ida.liu.se/~TDTS04/labs/2011/ass2/error1.html\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n'
 bad_cont =  b'HTTP/1.1 301 Moved Permanently\r\nDate: Fri, 15 Feb 2019 05:58:12 GMT\r\nServer: Varnish\r\nLocation: https://www.ida.liu.se/~TDTS04/labs/2011/ass2/error2.html\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n'
 
-baddies = ["spongebob", "britney spears", "paris hilton", "norrkoping", "examples", "choose"] 
+baddies = ["spongebob", "britney spears", "paris hilton", "norrkoping", "examples", "choose"]
 
 class PyProx:
 
@@ -32,7 +32,7 @@ class PyProx:
             sys.exit(1)
 
     def start_server(self):
-        
+
         while 1:
             # The accepted client's socket and that client's address
             conn, cli_addr = self.server.accept()
@@ -56,18 +56,17 @@ class PyProx:
 
             if word in url:
                 return True
-        
+
         return False
 
     def client_connection(self, conn, cli_addr):
 
         # Get the request from client, which site client wants to browse
         data_req = conn.recv(BUFFER)
-        req_url  = data_req.decode().split(" ")[1]
-        req_url  = req_url.split("/")[2] 
-        first    = data_req.decode().split("\n")[0]
-        save     = b""
-        
+        req_url  = data_req.decode("ISO-8859-1").split(" ")[1]
+        req_url  = req_url.split("/")[2]
+        first    = data_req.decode("ISO-8859-1").split("\n")[0]
+
 
         if "www." in req_url:
             req_url  = req_url.split("www.")[1]
@@ -88,28 +87,30 @@ class PyProx:
                 dis_a_baddie = False
                 check        = False
 
-                checkbuff = b""
-
                 garbage = client_socket.recv(BUFFER)
                 header  = garbage.split(b'\r\n\r\n')[0]
-                
-                decoded_h = header.decode("utf-8")
+
+                decoded_h = header.decode("ISO-8859-1")
 
                 while 1:
 
-                    save    += garbage
+                    conn.send(garbage)
+                    garbage = client_socket.recv(BUFFER)
 
-                    if "text/html" in decoded_h:
-                        checkbuff += garbage
-                        check = True
+
+
+                    #if "text/html" in decoded_h:
+                        #checkbuff += garbage
+                        #check = True
 
                     if len(garbage) > 0:
                         continue
 
                     else:
-                        break      
+                        break
 
-                    garbage = client_socket.recv(BUFFER)    
+
+
 
                 # Content filtering doesn't work properly
                 #print(checkbuff.decode("utf-8"))
@@ -118,9 +119,9 @@ class PyProx:
                     conn.send(bad_cont)
                     conn.close()
                     _thread.exit()
-                
 
-                conn.send(save)
+
+
                 client_socket.close()
 
             except Exception as e:
@@ -131,7 +132,7 @@ class PyProx:
                 print("Connection closed, thread exitted.")
                 _thread.exit()
 
-        
+
 
 
 if __name__ == "__main__":
@@ -147,6 +148,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Control-C was pressed, exiting server...")
         sys.exit(1)
-
-
-            
