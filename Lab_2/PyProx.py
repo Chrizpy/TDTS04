@@ -1,6 +1,7 @@
 import socket
 import sys
 import _thread
+import interface
 
 HOST = ""
 BUFFER = 1024
@@ -40,6 +41,15 @@ class PyProx:
 
         self.server.close()
 
+    def bad_cont_in(self, cont):
+
+        if b"\x63\x68\x6F\x6F\x73\x65" in cont:
+            return True
+
+        else:
+            return False
+
+
     def bad_word(self, url):
 
         for word in baddies:
@@ -48,7 +58,6 @@ class PyProx:
                 return True
         
         return False
-
 
     def client_connection(self, conn, cli_addr):
 
@@ -79,6 +88,8 @@ class PyProx:
                 dis_a_baddie = False
                 check        = False
 
+                checkbuff = b""
+
                 garbage = client_socket.recv(BUFFER)
                 header  = garbage.split(b'\r\n\r\n')[0]
                 
@@ -89,20 +100,20 @@ class PyProx:
                     save    += garbage
 
                     if "text/html" in decoded_h:
+                        checkbuff += garbage
                         check = True
 
                     if len(garbage) > 0:
-                        
-                        if check:
-                            print(garbage.split(b'\n')[0])
-    
-                            check = False
-                        
+                        continue
+
                     else:
                         break      
 
                     garbage = client_socket.recv(BUFFER)    
-                        
+
+                # Content filtering doesn't work properly
+                #print(checkbuff.decode("utf-8"))
+
                 if dis_a_baddie:
                     conn.send(bad_cont)
                     conn.close()
@@ -125,7 +136,10 @@ class PyProx:
 
 if __name__ == "__main__":
 
-    proxen = PyProx(HOST, 8080)
+    face = interface.Interface()
+    face.run()
+
+    proxen = PyProx(HOST, face.get_port())
 
     try:
         proxen.start_server()
