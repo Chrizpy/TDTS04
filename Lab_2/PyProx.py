@@ -41,20 +41,22 @@ class PyProx:
 
         self.server.close()
 
-    def bad_cont_in(self, cont):
-
-        if b"\x63\x68\x6F\x6F\x73\x65" in cont:
-            return True
-
-        else:
-            return False
-
-
     def bad_word(self, url):
 
         for word in baddies:
 
             if word in url:
+                return True
+
+        return False
+
+    def baddi_cont(self, cont):
+
+        for word in baddies:
+
+            word.encode("ISO-8859-1")
+
+            if word in cont:
                 return True
 
         return False
@@ -91,29 +93,28 @@ class PyProx:
                 header  = garbage.split(b'\r\n\r\n')[0]
 
                 decoded_h = header.decode("ISO-8859-1")
-
+                print(decoded_h)
                 while 1:
 
                     conn.send(garbage)
                     garbage = client_socket.recv(BUFFER)
 
+                    if "text/html" in decoded_h:
+                        print(garbage.decode)
+                        check = True
 
+                    if check:
+                        print(garbage.decode("ISO-8859-1"))
+                        #dis_a_baddie = self.baddi_cont(garbage)
 
-                    #if "text/html" in decoded_h:
-                        #checkbuff += garbage
-                        #check = True
+                        if dis_a_baddie:
+                            break
 
                     if len(garbage) > 0:
                         continue
 
                     else:
                         break
-
-
-
-
-                # Content filtering doesn't work properly
-                #print(checkbuff.decode("utf-8"))
 
                 if dis_a_baddie:
                     conn.send(bad_cont)
